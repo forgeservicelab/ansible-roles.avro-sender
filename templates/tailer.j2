@@ -1,0 +1,12 @@
+#!/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+if logtail2 -o {{ logtail.offset_file }} {{ logtail.source_file }} > {{ logtail.output_file }}
+then
+  if [[ -s {{ logtail.output_file }} ]]
+  then
+    cd /opt/Access-Log-Parser/target
+    java -cp accesslog-parser-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.dennyac.accesslogparser.Driver {{ logtail.output_file }} {{ flume.spool_dir}}/{{ flume.avro_file }}
+    flume-ng avro-client -H {{ flume.avro_host }} -p {{ flume.avro_port }} -F {{ flume.spool_dir}}/{{ flume.avro_file }}
+  fi
+fi

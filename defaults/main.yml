@@ -1,2 +1,11 @@
 ---
 # defaults file for avro-sender
+logtail:
+  offset_file: '~/.logtail4avro.offset'
+  source_file: '/var/log/apache2/access.log'
+  output_file: '/tmp/apache2avro.log'
+flume:
+  spool_dir: '/var/spool/flume'
+  avro_file: 'apache_log.avro'
+  avro_host: 'localhost'
+  avro_port: 4141

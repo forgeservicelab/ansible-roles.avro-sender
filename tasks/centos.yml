@@ -1,0 +1,72 @@
+---
+- name: add Cloudera CDH5 repository
+  copy:
+    src: cdh5.repo
+    dest: /etc/yum.repos.d/cdh5.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: add Cloudera CDH5 key
+  rpm_key:
+    key: "http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera"
+
+- name: install logtail
+  yum:
+    name: logcheck
+
+- name: install httplib2
+  yum:
+    name: python-httplib2
+
+- name: install wget
+  yum:
+    name: wget
+
+- name: get java 8
+  command: 'wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.tar.gz"
+    chdir=/tmp/'
+
+- name: unpack java 8
+  unarchive:
+    copy: no
+    src: /tmp/jdk-8u45-linux-x64.tar.gz
+    dest: /opt/
+
+- name: install java alternatives
+  command: "alternatives {{ item }}"
+  with_items:
+    - '--install /usr/bin/java java /opt/jdk1.8.0_45/bin/java 2'
+    - '--install /usr/bin/jar jar /opt/jdk1.8.0_45/bin/jar 2'
+    - '--install /usr/bin/javac javac /opt/jdk1.8.0_45/bin/javac 2'
+    - '--set java /opt/jdk1.8.0_45/bin/java'
+    - '--set jar /opt/jdk1.8.0_45/bin/jar'
+    - '--set javac /opt/jdk1.8.0_45/bin/javac'
+
+- name: get maven 3.2
+  get_url:
+    url: 'http://mirrors.gigenet.com/apache/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz'
+    dest: /tmp/
+
+- name: unpack maven 3.2
+  unarchive:
+    copy: no
+    src: /tmp/apache-maven-3.2.5-bin.tar.gz
+    dest: /opt/
+
+- name: link maven home
+  file:
+    src: /opt/apache-maven-3.2.5
+    dest: /usr/local/maven
+    state: link
+
+- name: upload maven profile
+  copy:
+    src: maven.sh
+    dest: /etc/profile.d/maven.sh
+
+- name: link maven binary
+  file:
+    src: /usr/local/maven/bin/mvn
+    dest: /usr/bin/mvn
+    state: link

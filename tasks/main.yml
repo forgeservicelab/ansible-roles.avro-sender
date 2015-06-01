@@ -1,2 +1,43 @@
 ---
 # tasks file for avro-sender
+
+- include: centos.yml
+  when: ansible_distribution == 'CentOS'
+
+- include: debian.yml
+  when: ansible_distribution == 'Debian'
+
+- include: ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install flume
+  action: "{{ ansible_pkg_mgr }}
+    name=flume-ng"
+
+- name: install git
+  action: "{{ ansible_pkg_mgr }}
+    name=git"
+
+- name: get Access Log Parser
+  git:
+    repo: https://github.com/dennyac/Access-Log-Parser.git
+    dest: /opt/Access-Log-Parser
+
+- name: Build Access Log Parser
+  command: mvn package
+  args:
+    chdir: /opt/Access-Log-Parser
+  register: maven
+  failed_when: "maven.rc != 0 and 'BUILD SUCCESS' not in maven.stdout"
+
+- name: Upload logtail script
+  template:
+    src: tailer.j2
+    dest: /opt/tailer.sh
+    mode: 0755
+
+- name: Set up cron job to gather logs
+  cron:
+    name: Get webserver access logs increment
+    minute: '*/5'
+    job: /opt/tailer.sh
