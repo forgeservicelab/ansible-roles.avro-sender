@@ -30,6 +30,11 @@
   register: maven
   failed_when: "maven.rc != 0 and 'BUILD SUCCESS' not in maven.stdout"
 
+- name: Create spool dir
+  file:
+    path: "{{ flume.spool_dir }}"
+    state: directory
+
 - name: Upload logtail script
   template:
     src: tailer.j2
