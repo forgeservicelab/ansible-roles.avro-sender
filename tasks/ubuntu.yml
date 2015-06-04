@@ -22,11 +22,7 @@
     update_cache: yes
 
 - name: Auto accept oracle java license
-  debconf:
-    name: oracle-java8-installer
-    question: shared/accepted-oracle-license-v1-1
-    value: true
-    vtype: select
+  shell: echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
 
 - name: install java 8
   apt:
