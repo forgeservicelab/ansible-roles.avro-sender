@@ -35,14 +35,34 @@
 
 - name: Create spool dir
   file:
-    path: "{{ flume.spool_dir }}"
+    path: "{{ item.spoolDir }}"
     state: directory
+    owner: flume
+    group: flume
+    recurse: yes
+  with_items:
+    - "{{ flume_agent.sources }}"
+  when: "item.type == 'spooldir'"
 
 - name: Upload logtail script
   template:
     src: tailer.j2
     dest: /opt/tailer.sh
     mode: 0755
+
+- name: Configure flume-ng-agent
+  template:
+    src: flume-conf.j2
+    dest: /etc/flume-ng/conf/flume.conf
+  notify: restart flume-agent
+
+- name: Set the Flume agent name
+  lineinfile:
+    dest: /etc/default/flume-ng-agent
+    backup: yes
+    insertafter: '^# (FLUME_AGENT_NAME=).*'
+    line: 'FLUME_AGENT_NAME={{ flume_agent.name }}'
+  notify: restart flume-agent
 
 - name: Set up cron job to gather logs
   cron:

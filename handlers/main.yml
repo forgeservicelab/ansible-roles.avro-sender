@@ -1,2 +1,8 @@
 ---
 # handlers file for avro-sender
+
+- name: restart flume-agent
+  service:
+    name: flume-ng-agent
+    state: restarted
+  ignore_errors: yes
