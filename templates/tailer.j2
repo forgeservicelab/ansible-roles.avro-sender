@@ -6,7 +6,8 @@ then
   if [[ -s {{ logtail.output_file }} ]]
   then
     cd /opt/Access-Log-Parser/target
-    java -cp accesslog-parser-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.dennyac.accesslogparser.Driver {{ logtail.output_file }} {{ flume.spool_dir}}/{{ flume.avro_file }}
-    flume-ng avro-client -H {{ flume.avro_host }} -p {{ flume.avro_port }} -F {{ flume.spool_dir}}/{{ flume.avro_file }}
+    {% for source in flume_agent.sources if source.type == 'spooldir' %}
+    java -cp accesslog-parser-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.dennyac.accesslogparser.Driver {{ logtail.output_file }} {{ source.spoolDir}}/{{ avro_file }}
+    {% endfor %}
   fi
 fi

@@ -12,7 +12,10 @@
 
 - name: install flume
   action: "{{ ansible_pkg_mgr }}
-    name=flume-ng"
+    name={{ item }}"
+  with_items:
+    - flume-ng
+    - flume-ng-agent
 
 - name: install git
   action: "{{ ansible_pkg_mgr }}
