@@ -20,9 +20,11 @@ flume_agent:
       deletePolicy: immediate
       batchSize: 1
       deserializer: AVRO
+      channels: memoryChannel
   sinks:
     - name: avroSink
       type: avro
       hostname: 'localhost'
       port: 4141
       batchSize: 10
+      channel: memoryChannel
