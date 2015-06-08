@@ -17,39 +17,6 @@
     - flume-ng
     - flume-ng-agent
 
-- name: install git
-  action: "{{ ansible_pkg_mgr }}
-    name=git"
-
-- name: get Access Log Parser
-  git:
-    repo: https://github.com/dennyac/Access-Log-Parser.git
-    dest: /opt/Access-Log-Parser
-
-- name: Build Access Log Parser
-  command: mvn package
-  args:
-    chdir: /opt/Access-Log-Parser
-  register: maven
-  failed_when: "maven.rc != 0 and 'BUILD SUCCESS' not in maven.stdout"
-
-- name: Create spool dir
-  file:
-    path: "{{ item.spoolDir }}"
-    state: directory
-    owner: flume
-    group: flume
-    recurse: yes
-  with_items:
-    - "{{ flume_agent.sources }}"
-  when: "item.type == 'spooldir'"
-
-- name: Upload logtail script
-  template:
-    src: tailer.j2
-    dest: /opt/tailer.sh
-    mode: 0755
-
 - name: Configure flume-ng-agent
   template:
     src: flume-conf.j2
@@ -63,9 +30,3 @@
     insertafter: '^# (FLUME_AGENT_NAME=).*'
     line: 'FLUME_AGENT_NAME={{ flume_agent.name }}'
   notify: restart flume-agent
-
-- name: Set up cron job to gather logs
-  cron:
-    name: Get webserver access logs increment
-    minute: '*/5'
-    job: /opt/tailer.sh

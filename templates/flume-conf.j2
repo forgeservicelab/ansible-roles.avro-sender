@@ -24,7 +24,7 @@
 {{ flume_agent.name }}.channels = {{ flume_agent.channels | map(attribute='name') | join(' ') }}
 {{ flume_agent.name }}.sinks = {{ flume_agent.sinks | map(attribute='name') | join(' ') }}
 
-{% for component_type in ['sources', 'sinks', 'channels']%}
+{% for component_type in flume_agent.keys() if component_type != 'name' %}
 # {{ component_type }} definitions.
 {% for component in flume_agent[component_type] %}
 {% for property in component.keys() %}
