@@ -1,30 +1,33 @@
 ---
 # defaults file for avro-sender
-logtail:
-  offset_file: '~/.logtail4avro.offset'
-  source_file: '/var/log/apache2/access.log'
-  output_file: '/tmp/apache2avro.log'
-
-avro_file: 'apache_log.avro'
+log_file: '/var/log/apache2/access.log'
+avro_collector: localhost
+avro_collector_port: 4141
 
 flume_agent:
   name: agent
   channels:
     - name: memoryChannel
       type: memory
-      capacity: 1000
+      capacity: 100
   sources:
-    - name: spoolDirSource
-      type: spooldir
-      spoolDir: "/var/spool/flume"
-      deletePolicy: immediate
+    - name: execSource
+      type: exec
+      command: "tail -F {{ log_file }}"
       batchSize: 1
-      deserializer: AVRO
       channels: memoryChannel
+      interceptors: itime ihost itype
+      interceptors.itime.type: timestamp
+      interceptors.ihost.type: host
+      interceptors.ihost.useIP: false
+      interceptors.ihost.hostHeader: host
+      interceptors.itype.type: static
+      interceptors.itype.key: log_type
+      interceptors.itype.value: apache_access_combined
   sinks:
     - name: avroSink
       type: avro
-      hostname: 'localhost'
-      port: 4141
+      hostname: "{{ avro_collector }}"
+      port: "{{ avro_collector_port }}"
       batchSize: 10
       channel: memoryChannel
