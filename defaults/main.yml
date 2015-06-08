@@ -30,4 +30,5 @@ flume_agent:
       hostname: "{{ avro_collector }}"
       port: "{{ avro_collector_port }}"
       batchSize: 10
+      compression-type: deflate
       channel: memoryChannel
